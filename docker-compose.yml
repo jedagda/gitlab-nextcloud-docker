@@ -53,7 +53,7 @@ services:
     
     nextcloud_db:
         image: postgres
-        restart: always
+        #restart: always
         hostname: nextcloud_db
         container_name: nextcloud_db
         volumes:
