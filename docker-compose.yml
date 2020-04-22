@@ -1,0 +1,109 @@
+version: '3.7'
+
+services:
+
+    traefik:
+        build: './traefik'
+        container_name: "traefik"
+        command:
+            #- "--log.level=DEBUG"
+            - "--api.insecure=true"
+            - "--providers.docker=true"
+            - "--providers.docker.exposedbydefault=false"
+            - "--entrypoints.web.address=:80"
+            - "--providers.docker.network=traefik"
+        ports:
+            - "80:80"
+            - "8080:8080"
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+        networks: 
+            lab-ops-traefik:
+            lab-ops-nextcloud:
+    
+    nextcloud:
+        build: './nextcloud'
+        container_name: nextcloud
+        hostname: nextcloud
+        labels: 
+            - "traefik.enable=true"
+            - "traefik.http.routers.nextcloud.entrypoints=web"
+            - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.localhost`)"
+            
+        #ports: 
+        #    - 8081:80
+        volumes:
+            - lab-ops-nextcloud:/var/www/html
+        environment: 
+            - POSTGRES_HOST=nextcloud_db
+            - POSTGRES_DB=files
+            - POSTGRES_USER=user
+            - POSTGRES_PASSWORD=password
+            - NEXTCLOUD_ADMIN_PASSWORD=password
+            - NEXTCLOUD_ADMIN_USER=admin
+            - NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.localhost
+    
+        depends_on:
+            - nextcloud_db
+
+        networks: 
+            lab-ops-traefik:
+            lab-ops-nextcloud:
+                ipv4_address: "172.193.128.4"
+    
+    nextcloud_db:
+        image: postgres
+        restart: always
+        hostname: nextcloud_db
+        container_name: nextcloud_db
+        volumes:
+        - lab-ops-nextcloud_db:/var/lib/postgresql/data
+        environment:
+        - POSTGRES_DB=files
+        - POSTGRES_USER=user
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_HOST=nextcloud_db
+       
+        networks: 
+            lab-ops-nextcloud:
+                ipv4_address: "172.193.128.5"
+    
+    gitlab:
+        build: './gitlab'
+        #restart: always
+        container_name: gitlab
+        hostname: gitlab
+        labels: 
+            - "traefik.enable=true"
+            - "traefik.http.routers.gitlab.entrypoints=web"
+            - "traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)"
+            - "traefik.http.routers.gitlab.service=gitlab"
+            - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+        #environment:
+            #GITLAB_OMNIBUS_CONFIG: |
+                #external_url 'http://gitlab.localhost'
+                #Add any other gitlab.rb configuration here, each on its own line
+        #ports:
+        #    - '80'
+        #    - '443'
+        #    - '22'
+        volumes:
+            - './gitlab/config:/etc/gitlab'
+            - './gitlab/logs:/var/log/gitlab'
+            - './gitlab/data:/var/opt/gitlab'
+        networks: 
+            lab-ops-traefik:
+              
+volumes:
+    lab-ops-nextcloud:
+    lab-ops-nextcloud_db:
+
+networks: 
+    lab-ops-traefik:
+    lab-ops-nextcloud:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: "172.193.128.0/24"
+    
