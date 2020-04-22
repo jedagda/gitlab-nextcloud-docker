@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "Preparing gitlab related folders config, data, logs"
 
 mkdir ./gitlab/config >/dev/null 2>&1 

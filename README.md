@@ -3,7 +3,11 @@
 **note**
 *This Environment is not secure and its not meant for production, at the moment it is only a proof of concept for Traefik.* <br/>
 *TODO:* <br/>
-- *Add HTTPSfucntionality *
+- Add HTTPS Entrypoins to Gitlab
+- Add SSH Entrypoint to Gitlab
+- Add HTTPS entrypoint to Nextcloud 
+- Create a write up
+
 ## Steps to follow:
 1. Run the following script: <br/>
 `./prepare` <br/>
