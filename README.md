@@ -25,4 +25,9 @@
         - user/password: admin/admin
     - gitlab -> gitlab.localhost
 
-4. You can change the environment variables to modify the appropriate user name and passwords or you can use docker secrets to do it securely.
+4. If you want to clean up and start fresh make sure you run the following commands and script. <br/>
+    - docker-compose down
+    - docker-compose volume prune
+    - ./clean.sh
+
+4. You can change the environment variables to modify the appropriate user name and passwords or you can use docker secrets to do it securely. <br/>
